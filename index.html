@@ -88,51 +88,21 @@
         
         /* === ESTILOS PARA EL MODAL DE INSTALACIÓN === */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(4px);
-            display: none; /* Oculto por defecto */
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
         }
-        .modal-overlay.visible {
-            display: flex; /* Se muestra con JS */
-        }
+        .modal-overlay.visible { display: flex; }
         .modal-content {
-            background: white;
-            padding: 30px 40px;
-            border-radius: var(--radius);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            text-align: center;
-            max-width: 450px;
-            width: 90%;
+            background: white; padding: 30px 40px; border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;
+            max-width: 450px; width: 90%;
             animation: fadeIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
-        .modal-icon {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-        .modal-content h2 {
-            font-size: 1.6rem;
-            color: var(--dark);
-            margin-bottom: 10px;
-        }
-        .modal-content p {
-            color: var(--secondary);
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
+        .modal-icon { font-size: 3rem; color: var(--primary); margin-bottom: 15px; }
+        .modal-content h2 { font-size: 1.6rem; color: var(--dark); margin-bottom: 10px; }
+        .modal-content p { color: var(--secondary); margin-bottom: 25px; line-height: 1.6; }
+        .modal-buttons { display: flex; gap: 15px; justify-content: center; }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
@@ -168,7 +138,7 @@
                 <button id="installBtn" class="pwa-install-btn"><i class="fas fa-download"></i> Instalar App</button>
             </div>
 
-            <!-- ... (El resto del HTML de las páginas no cambia) ... -->
+            <!-- ... Páginas de la aplicación ... -->
              <!-- Página de Login -->
             <div id="loginPage" class="page active-page">
                 <h2 class="page-title">Iniciar Sesión en LuxuryStay</h2>
@@ -346,72 +316,75 @@
             <h2>Instalar la App de LuxuryStay</h2>
             <p>Añade nuestra aplicación a tu pantalla de inicio para un acceso rápido y una experiencia mejorada, ¡incluso sin conexión!</p>
             <div class="modal-buttons">
-                <button id="modalInstallBtn" class="btn btn-success">
-                    <i class="fas fa-download"></i> Instalar Ahora
-                </button>
-                <button id="modalCloseBtn" class="btn btn-light">
-                    Cerrar
-                </button>
+                <button id="modalInstallBtn" class="btn btn-success"><i class="fas fa-download"></i> Instalar Ahora</button>
+                <button id="modalCloseBtn" class="btn btn-light">Cerrar</button>
             </div>
         </div>
     </div>
 
-
     <script>
+        // Aseguramos que TODO el código se ejecute solo cuando el DOM esté listo.
         document.addEventListener('DOMContentLoaded', () => {
+            
             // ================= PWA Functionality with Modal =================
             let deferredPrompt;
-            const installButton = document.getElementById('installBtn'); // Botón del header
+            const installButton = document.getElementById('installBtn');
             const installModal = document.getElementById('installModal');
             const modalInstallBtn = document.getElementById('modalInstallBtn');
             const modalCloseBtn = document.getElementById('modalCloseBtn');
 
             window.addEventListener('beforeinstallprompt', (e) => {
-                // Prevenir que el mini-infobar de Chrome aparezca en móviles
                 e.preventDefault();
-                // Guardar el evento para poder llamarlo más tarde.
                 deferredPrompt = e;
-                // Mostrar nuestro modal personalizado
-                installModal.classList.add('visible');
-                // También mostrar el botón del header por si el usuario cierra el modal
-                installButton.style.display = 'flex';
-            });
-
-            // Acción del botón de instalación del MODAL
-            modalInstallBtn.addEventListener('click', async () => {
-                installModal.classList.remove('visible'); // Ocultar el modal
-                if (deferredPrompt) {
-                    deferredPrompt.prompt(); // Mostrar el diálogo de instalación del navegador
-                    const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        console.log('Usuario aceptó instalar la PWA desde el modal');
-                        installButton.style.display = 'none'; // Ocultar el botón del header
-                    }
-                    deferredPrompt = null; // El prompt solo se puede usar una vez
+                if (installModal) {
+                    installModal.classList.add('visible');
+                }
+                if (installButton) {
+                    installButton.style.display = 'flex';
                 }
             });
 
-            // Acción del botón de cerrar del MODAL
-            modalCloseBtn.addEventListener('click', () => {
-                installModal.classList.remove('visible');
-            });
+            if(modalInstallBtn) {
+                modalInstallBtn.addEventListener('click', async () => {
+                    if (installModal) {
+                       installModal.classList.remove('visible');
+                    }
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted' && installButton) {
+                            installButton.style.display = 'none';
+                        }
+                        deferredPrompt = null;
+                    }
+                });
+            }
             
-            // Acción del botón de instalación del HEADER (fallback)
-            installButton.addEventListener('click', async () => {
-                 if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        installButton.style.display = 'none';
+            if(modalCloseBtn) {
+                modalCloseBtn.addEventListener('click', () => {
+                    if(installModal) {
+                        installModal.classList.remove('visible');
                     }
-                    deferredPrompt = null;
-                }
-            });
+                });
+            }
+            
+            if(installButton) {
+                installButton.addEventListener('click', async () => {
+                     if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            installButton.style.display = 'none';
+                        }
+                        deferredPrompt = null;
+                    }
+                });
+            }
             
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('service-worker.js')
-                        .then(registration => console.log('ServiceWorker registrado con éxito:', registration.scope))
+                    navigator.serviceWorker.register('./service-worker.js')
+                        .then(registration => console.log('ServiceWorker registrado:', registration.scope))
                         .catch(error => console.log('Error al registrar ServiceWorker:', error));
                 });
             }
@@ -425,7 +398,10 @@
             };
             function showPage(pageId) {
                 pages.forEach(page => page.classList.remove('active-page'));
-                document.getElementById(pageId).classList.add('active-page');
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.add('active-page');
+                }
             }
             Object.keys(navButtons).forEach(btnId => {
                 const btn = document.getElementById(btnId);
@@ -434,29 +410,21 @@
                 }
             });
 
-            // ================= Control de huéspedes =================
-            let guestCount = 2;
+            // ================= Control de huéspedes y Cálculo de precios =================
             const guestCountEl = document.getElementById('guestCount');
-            document.getElementById('increaseGuests').addEventListener('click', () => { if (guestCount < 6) guestCountEl.textContent = ++guestCount; });
-            document.getElementById('decreaseGuests').addEventListener('click', () => { if (guestCount > 1) guestCountEl.textContent = --guestCount; });
+            if (guestCountEl) {
+                let guestCount = 2;
+                document.getElementById('increaseGuests').addEventListener('click', () => { if (guestCount < 6) guestCountEl.textContent = ++guestCount; });
+                document.getElementById('decreaseGuests').addEventListener('click', () => { if (guestCount > 1) guestCountEl.textContent = --guestCount; });
+            }
 
-            // ================= Cálculo de precios =================
             const roomPrices = { '189': 189, '249': 249 };
             const checkinDateEl = document.getElementById('checkinDate');
             const checkoutDateEl = document.getElementById('checkoutDate');
             const roomTypeEl = document.getElementById('roomType');
+
             function formatDate(date) { return date.toISOString().split('T')[0]; }
-            function setupInitialDates() {
-                const today = new Date();
-                const tomorrow = new Date(today);
-                tomorrow.setDate(today.getDate() + 1);
-                const nextDay = new Date(tomorrow);
-                nextDay.setDate(tomorrow.getDate() + 3);
-                checkinDateEl.min = formatDate(today);
-                checkinDateEl.value = formatDate(tomorrow);
-                checkoutDateEl.min = formatDate(tomorrow);
-                checkoutDateEl.value = formatDate(nextDay);
-            }
+            
             function calculateTotal() {
                 const checkin = checkinDateEl.value; const checkout = checkoutDateEl.value; const roomType = roomTypeEl.value;
                 if (!checkin || !checkout) return;
@@ -470,32 +438,43 @@
                 document.getElementById('taxesText').textContent = `$${taxes.toFixed(2)}`;
                 document.getElementById('totalPrice').textContent = `$${total.toFixed(2)}`;
             }
-            checkinDateEl.addEventListener('change', () => {
-                const newMinCheckoutDate = new Date(checkinDateEl.value); newMinCheckoutDate.setDate(newMinCheckoutDate.getDate() + 1);
-                checkoutDateEl.min = formatDate(newMinCheckoutDate);
-                if (new Date(checkoutDateEl.value) < newMinCheckoutDate) { checkoutDateEl.value = formatDate(newMinCheckoutDate); }
+            
+            if (checkinDateEl && checkoutDateEl && roomTypeEl) {
+                function setupInitialDates() {
+                    const today = new Date(); const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+                    const nextDay = new Date(tomorrow); nextDay.setDate(tomorrow.getDate() + 3);
+                    checkinDateEl.min = formatDate(today); checkinDateEl.value = formatDate(tomorrow);
+                    checkoutDateEl.min = formatDate(tomorrow); checkoutDateEl.value = formatDate(nextDay);
+                }
+                checkinDateEl.addEventListener('change', () => {
+                    const newMinCheckoutDate = new Date(checkinDateEl.value); newMinCheckoutDate.setDate(newMinCheckoutDate.getDate() + 1);
+                    checkoutDateEl.min = formatDate(newMinCheckoutDate);
+                    if (new Date(checkoutDateEl.value) < newMinCheckoutDate) { checkoutDateEl.value = formatDate(newMinCheckoutDate); }
+                    calculateTotal();
+                });
+                checkoutDateEl.addEventListener('change', calculateTotal);
+                roomTypeEl.addEventListener('change', calculateTotal);
+                setupInitialDates();
                 calculateTotal();
-            });
-            checkoutDateEl.addEventListener('change', calculateTotal);
-            roomTypeEl.addEventListener('change', calculateTotal);
-            setupInitialDates();
-            calculateTotal();
+            }
 
             // ================= Manejo de formularios =================
             function showAlert(elementId, message, type) {
                 const alertElement = document.getElementById(elementId);
+                if (!alertElement) return;
                 alertElement.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
-                alertElement.className = 'alert';
-                alertElement.classList.add(`alert-${type}`);
+                alertElement.className = 'alert'; alertElement.classList.add(`alert-${type}`);
                 alertElement.style.display = 'flex';
                 setTimeout(() => { alertElement.style.display = 'none'; }, 5000);
             }
             function validateEmail(email) { const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; return re.test(String(email).toLowerCase()); }
-            document.getElementById('loginSubmit').addEventListener('click', () => { const email = document.getElementById('loginEmail').value; const password = document.getElementById('loginPassword').value; if (!validateEmail(email)) { showAlert('loginAlert', 'Por favor ingresa un email válido.', 'error'); return; } if (password.length < 8) { showAlert('loginAlert', 'La contraseña debe tener al menos 8 caracteres.', 'error'); return; } showAlert('loginAlert', 'Inicio de sesión exitoso. Redirigiendo...', 'success'); setTimeout(() => showPage('bookingPage'), 1500); });
-            document.getElementById('signupSubmit').addEventListener('click', () => { const name = document.getElementById('signupName').value; const email = document.getElementById('signupEmail').value; const password = document.getElementById('signupPassword').value; const confirmPassword = document.getElementById('signupConfirmPassword').value; if (!name) { showAlert('signupAlert', 'Por favor ingresa tu nombre completo.', 'error'); return; } if (!validateEmail(email)) { showAlert('signupAlert', 'Por favor ingresa un email válido.', 'error'); return; } if (password.length < 8) { showAlert('signupAlert', 'La contraseña debe tener al menos 8 caracteres.', 'error'); return; } if (password !== confirmPassword) { showAlert('signupAlert', 'Las contraseñas no coinciden.', 'error'); return; } showAlert('signupAlert', '¡Cuenta creada con éxito! Ahora puedes iniciar sesión.', 'success'); setTimeout(() => showPage('loginPage'), 2000); });
-            document.getElementById('forgotSubmit').addEventListener('click', () => { const email = document.getElementById('forgotEmail').value; if (!validateEmail(email)) { showAlert('forgotAlert', 'Por favor ingresa un email válido.', 'error'); return; } showAlert('forgotAlert', 'Se ha enviado un enlace de recuperación a tu email.', 'success'); });
-            document.getElementById('confirmBooking').addEventListener('click', () => { const total = document.getElementById('totalPrice').textContent; if (parseFloat(total.replace('$', '')) <= 0) { alert('Por favor, selecciona un rango de fechas válido para la reserva.'); return; } alert(`¡Reserva confirmada con éxito! Total: ${total}\nGracias por elegir LuxuryStay.`); });
-        });
+            
+            document.getElementById('loginSubmit')?.addEventListener('click', () => { const email = document.getElementById('loginEmail').value; const password = document.getElementById('loginPassword').value; if (!validateEmail(email)) { showAlert('loginAlert', 'Por favor ingresa un email válido.', 'error'); return; } if (password.length < 8) { showAlert('loginAlert', 'La contraseña debe tener al menos 8 caracteres.', 'error'); return; } showAlert('loginAlert', 'Inicio de sesión exitoso. Redirigiendo...', 'success'); setTimeout(() => showPage('bookingPage'), 1500); });
+            document.getElementById('signupSubmit')?.addEventListener('click', () => { const name = document.getElementById('signupName').value; const email = document.getElementById('signupEmail').value; const password = document.getElementById('signupPassword').value; const confirmPassword = document.getElementById('signupConfirmPassword').value; if (!name) { showAlert('signupAlert', 'Por favor ingresa tu nombre completo.', 'error'); return; } if (!validateEmail(email)) { showAlert('signupAlert', 'Por favor ingresa un email válido.', 'error'); return; } if (password.length < 8) { showAlert('signupAlert', 'La contraseña debe tener al menos 8 caracteres.', 'error'); return; } if (password !== confirmPassword) { showAlert('signupAlert', 'Las contraseñas no coinciden.', 'error'); return; } showAlert('signupAlert', '¡Cuenta creada con éxito! Ahora puedes iniciar sesión.', 'success'); setTimeout(() => showPage('loginPage'), 2000); });
+            document.getElementById('forgotSubmit')?.addEventListener('click', () => { const email = document.getElementById('forgotEmail').value; if (!validateEmail(email)) { showAlert('forgotAlert', 'Por favor ingresa un email válido.', 'error'); return; } showAlert('forgotAlert', 'Se ha enviado un enlace de recuperación a tu email.', 'success'); });
+            document.getElementById('confirmBooking')?.addEventListener('click', () => { const total = document.getElementById('totalPrice').textContent; if (parseFloat(total.replace('$', '')) <= 0) { alert('Por favor, selecciona un rango de fechas válido para la reserva.'); return; } alert(`¡Reserva confirmada con éxito! Total: ${total}\nGracias por elegir LuxuryStay.`); });
+
+        }); // Fin del listener DOMContentLoaded
     </script>
 </body>
 </html>
